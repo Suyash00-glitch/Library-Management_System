@@ -1,5 +1,7 @@
 import java.awt.*;
 import javax.swing.*;
+//import javax.swing.border.Border;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.*;
@@ -7,6 +9,7 @@ import java.sql.*;
 
 
 class StudentDashboard{
+    public static String loggedInUSN;
 StudentDashboard(){
     JFrame jfrm = new JFrame("Student Dashboard");
         jfrm.setSize(500, 500);
@@ -96,10 +99,66 @@ class SearchBooks extends JPanel{
 }
 }
 }
-class Profile extends JPanel{
-    Profile(){
+class Profile extends JPanel {
 
+    Profile() {  
+        setLayout(new BorderLayout(10, 10));
+
+        JPanel infoPanel = new JPanel(new GridLayout(0, 2, 5, 5)); 
+        JLabel imageLabel = new JLabel(); 
+
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection conn = DriverManager.getConnection(
+                "jdbc:mysql://localhost:3306/librarysys", "root", "mybag468"
+            );
+
+            String query = "SELECT * FROM studentinfo WHERE usn = ?";
+            PreparedStatement ps = conn.prepareStatement(query);
+            ps.setString(1, StudentDashboard.loggedInUSN);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                infoPanel.add(new JLabel("Name:"));
+                infoPanel.add(new JLabel(rs.getString("name")));
+
+                infoPanel.add(new JLabel("USN:"));
+                infoPanel.add(new JLabel(rs.getString("usn")));
+
+                infoPanel.add(new JLabel("Branch:"));
+                infoPanel.add(new JLabel(rs.getString("branch")));
+
+                infoPanel.add(new JLabel("Section:"));
+                infoPanel.add(new JLabel(rs.getString("sec")));
+
+                infoPanel.add(new JLabel("Year:"));
+                infoPanel.add(new JLabel(rs.getString("year")));
+
+                infoPanel.add(new JLabel("Email:"));
+                infoPanel.add(new JLabel(rs.getString("email")));
+
+                infoPanel.add(new JLabel("Contact:"));
+                infoPanel.add(new JLabel(rs.getString("contact")));
+
+            
+                String imageUrl = rs.getString("imageurl");
+                if (imageUrl != null && !imageUrl.isEmpty()) {
+                    ImageIcon icon = new ImageIcon(imageUrl);
+                    
+                    Image img = icon.getImage().getScaledInstance(120, 120, Image.SCALE_SMOOTH);
+                    imageLabel.setIcon(new ImageIcon(img));
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Student not found.", "Error", JOptionPane.WARNING_MESSAGE);
+            }
+
+            conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error: " + e.getMessage());
+        }
+
+        add(imageLabel, BorderLayout.NORTH); 
+        add(infoPanel, BorderLayout.CENTER);
     }
-
 }
-
